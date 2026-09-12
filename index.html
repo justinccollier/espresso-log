@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="EXTRACT">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
 <title>EXTRACT — Shot Log</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -125,6 +129,22 @@
         <div class="panel-label">
           <span>RESULT LOGGED</span><span class="dotted-line"></span><span id="resultTime">00:00.0</span>
         </div>
+
+        <div class="field panel">
+          <div class="field-label-row">
+            <span class="field-label">Yield</span>
+            <span class="field-unit">GRAMS</span>
+          </div>
+          <div class="stepper-row">
+            <button type="button" class="step-btn" id="yieldDec" aria-label="Decrease yield">&minus;</button>
+            <div class="readout" id="yieldReadoutWrap">
+              <input type="number" id="yieldInput" class="dose-input" inputmode="decimal" step="0.1" value="36.0">
+            </div>
+            <button type="button" class="step-btn" id="yieldInc" aria-label="Increase yield">&plus;</button>
+          </div>
+          <div class="roast-meta" id="ratioReadout">RATIO 1 : 2.0</div>
+        </div>
+
         <div class="field panel">
           <div class="field-label-row">
             <span class="field-label">Tasting Notes</span>

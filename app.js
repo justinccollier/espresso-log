@@ -52,6 +52,10 @@
   const abortBtn = $('abortBtn');
 
   const resultTime = $('resultTime');
+  const yieldInput = $('yieldInput');
+  const yieldDec = $('yieldDec');
+  const yieldInc = $('yieldInc');
+  const ratioReadout = $('ratioReadout');
   const notesInput = $('notesInput');
   const skipNotesBtn = $('skipNotesBtn');
   const saveNotesBtn = $('saveNotesBtn');
@@ -282,6 +286,24 @@
   doseInput.addEventListener('blur', () => setDose(parseFloat(doseInput.value || 0)));
 
   /* =========================================================
+     YIELD (post-shot)
+  ========================================================= */
+  function updateRatio() {
+    const dose = pendingEntry ? pendingEntry.dose : 0;
+    const y = parseFloat(yieldInput.value) || 0;
+    ratioReadout.textContent = (dose > 0 && y > 0) ? `RATIO 1 : ${(y / dose).toFixed(1)}` : 'RATIO —';
+  }
+  function setYield(val) {
+    val = Math.max(0, Math.round(val * 10) / 10);
+    yieldInput.value = val.toFixed(1);
+    updateRatio();
+  }
+  yieldDec.addEventListener('click', () => setYield(parseFloat(yieldInput.value || 0) - 0.5));
+  yieldInc.addEventListener('click', () => setYield(parseFloat(yieldInput.value || 0) + 0.5));
+  yieldInput.addEventListener('input', updateRatio);
+  yieldInput.addEventListener('blur', () => setYield(parseFloat(yieldInput.value || 0)));
+
+  /* =========================================================
      SHOT TYPE (segmented control)
   ========================================================= */
   shotSegment.addEventListener('click', (e) => {
@@ -368,6 +390,7 @@
       const finalSeconds = Math.round(elapsedMs / 100) / 10;
       pendingEntry.extractionTime = finalSeconds;
       resultTime.textContent = formatTime(elapsedMs);
+      setYield(Math.round(pendingEntry.dose * 2 * 10) / 10);
       notesInput.value = '';
       showScreen('screen-notes');
     }
@@ -387,6 +410,7 @@
     const entry = Object.assign({}, pendingEntry, {
       id: 's_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
       createdAt: Date.now(),
+      yield: parseFloat(yieldInput.value) || 0,
       notes: notes || ''
     });
     shots.push(entry);
@@ -432,7 +456,11 @@
         <div class="log-stats">
           <span>GRIND <b>${s.grind.toFixed(1)}</b></span>
           <span>DOSE <b>${s.dose.toFixed(1)}g</b></span>
+          <span>YIELD <b>${(s.yield || 0).toFixed(1)}g</b></span>
           <span>SHOT <b>${s.shotType.toUpperCase()}</b></span>
+        </div>
+        <div class="log-stats">
+          <span>RATIO <b>1 : ${s.dose > 0 ? (s.yield / s.dose).toFixed(1) : '—'}</b></span>
         </div>
         ${s.notes ? `<div class="log-notes">${escapeHtml(s.notes)}</div>` : ''}
       `;
@@ -467,9 +495,10 @@
   }
 
   exportCsvBtn.addEventListener('click', () => {
-    const header = ['Date', 'Coffee', 'Roaster', 'Grind Size', 'Dose (g)', 'Shot Type', 'Extraction Time (s)', 'Notes'];
+    const header = ['Date', 'Coffee', 'Roaster', 'Grind Size', 'Dose (g)', 'Yield (g)', 'Ratio', 'Shot Type', 'Extraction Time (s)', 'Notes'];
     const rows = [...shots].sort((a, b) => a.createdAt - b.createdAt).map(s => [
-      s.date, s.coffeeName, s.roaster, s.grind, s.dose, s.shotType, s.extractionTime, s.notes
+      s.date, s.coffeeName, s.roaster, s.grind, s.dose, s.yield || 0,
+      s.dose > 0 ? `1:${(s.yield / s.dose).toFixed(1)}` : '', s.shotType, s.extractionTime, s.notes
     ]);
     const csv = [header, ...rows].map(r => r.map(csvEscape).join(',')).join('\n');
     downloadFile(csv, `extract-log-${todayISO()}.csv`, 'text/csv');
