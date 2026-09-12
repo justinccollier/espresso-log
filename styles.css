@@ -216,8 +216,28 @@ main{
   box-shadow: 0 0 0 1px var(--accent-glow);
 }
 
-/* Date input color-scheme so native picker icon is visible in dark mode */
-input[type="date"]{ color-scheme: dark; }
+/* Date input: strip native iOS chrome so it matches the flat input styling
+   instead of rendering its own inset/centered control */
+input[type="date"]{
+  color-scheme: dark;
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-height: 22px;
+}
+input[type="date"]::-webkit-date-and-time-value{
+  text-align: left;
+  margin: 0;
+  padding: 0;
+}
+input[type="date"]::-webkit-datetime-edit{
+  padding: 0;
+}
+input[type="date"]::-webkit-calendar-picker-indicator{
+  filter: invert(1) brightness(0.7) sepia(1) saturate(6) hue-rotate(-20deg);
+  opacity: 0.9;
+  margin-left: 8px;
+}
 
 .select-flat{
   appearance:none;
@@ -590,6 +610,61 @@ input[type="date"]{ color-scheme: dark; }
   padding:4px 6px;
 }
 .log-delete:active{ color: var(--accent); }
+
+.btn-add-roast{ width:100%; margin-bottom:16px; }
+
+.roast-card{
+  position:relative;
+  background: var(--panel);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 13px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.roast-card::before{
+  content:'';
+  position:absolute;
+  top:-1px; left:-1px;
+  width:7px; height:7px;
+  border-top:1px solid var(--border-strong);
+  border-left:1px solid var(--border-strong);
+}
+.roast-card-info{ min-width:0; }
+.roast-card-name{
+  font-size:14px;
+  font-weight:600;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.roast-card-roaster{
+  font-size:11px;
+  color: var(--text-dim);
+  margin-top:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.roast-card-actions{
+  display:flex;
+  gap:8px;
+  flex-shrink:0;
+}
+.roast-action-btn{
+  background:transparent;
+  border:1px solid var(--border-strong);
+  border-radius:2px;
+  color: var(--text-dim);
+  font-size:10px;
+  letter-spacing:1px;
+  padding:8px 10px;
+  cursor:pointer;
+}
+.roast-action-btn:active{ border-color: var(--accent); color: var(--accent); }
+.roast-action-btn.danger:active{ border-color: var(--accent); color: var(--accent); }
 
 .backup-panel{ margin-bottom:6px; }
 .backup-copy{

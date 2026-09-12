@@ -139,6 +139,19 @@
       </div>
     </section>
 
+    <!-- ===== SCREEN: ROASTS ===== -->
+    <section class="screen" id="screen-roasts">
+      <div class="screen-scroll">
+        <div class="panel-label">
+          <span>ROASTS</span><span class="dotted-line"></span><span id="roastCount">0</span>
+        </div>
+
+        <button class="btn-primary btn-small btn-add-roast" id="addRoastBtn">+ ADD ROAST</button>
+
+        <div id="roastsList" class="log-list roasts-list"></div>
+      </div>
+    </section>
+
     <!-- ===== SCREEN: LOG ===== -->
     <section class="screen" id="screen-log">
       <div class="screen-scroll">
@@ -176,6 +189,9 @@
     <button class="nav-btn" id="navLog" data-target="screen-log">
       <span class="nav-icon">≡</span><span class="nav-text">LOG</span>
     </button>
+    <button class="nav-btn" id="navRoasts" data-target="screen-roasts">
+      <span class="nav-icon">◎</span><span class="nav-text">ROASTS</span>
+    </button>
   </nav>
 
 </div>
@@ -184,7 +200,7 @@
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal panel">
     <div class="field-label-row">
-      <span class="field-label">Add Roast</span>
+      <span class="field-label" id="modalTitle">Add Roast</span>
     </div>
     <div class="field">
       <label class="field-label sub-label">Roast Name</label>

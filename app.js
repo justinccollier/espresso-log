@@ -64,6 +64,7 @@
   const importFileInput = $('importFileInput');
 
   const modalOverlay = $('modalOverlay');
+  const modalTitle = $('modalTitle');
   const newRoastName = $('newRoastName');
   const newRoastRoaster = $('newRoastRoaster');
   const modalError = $('modalError');
@@ -73,6 +74,10 @@
   const bottomNav = $('bottomNav');
   const navNew = $('navNew');
   const navLog = $('navLog');
+  const navRoasts = $('navRoasts');
+  const roastsList = $('roastsList');
+  const roastCount = $('roastCount');
+  const addRoastBtn = $('addRoastBtn');
 
   let shotType = 'Single';
   let grind = 5.0;
@@ -83,17 +88,20 @@
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     $(id).classList.add('active');
-    const showNav = (id === 'screen-new' || id === 'screen-log');
+    const showNav = (id === 'screen-new' || id === 'screen-log' || id === 'screen-roasts');
     bottomNav.classList.toggle('hidden', !showNav);
     if (showNav) {
       navNew.classList.toggle('active', id === 'screen-new');
       navLog.classList.toggle('active', id === 'screen-log');
+      navRoasts.classList.toggle('active', id === 'screen-roasts');
     }
     if (id === 'screen-log') renderLog();
+    if (id === 'screen-roasts') renderRoastsList();
   }
 
   navNew.addEventListener('click', () => showScreen('screen-new'));
   navLog.addEventListener('click', () => showScreen('screen-log'));
+  navRoasts.addEventListener('click', () => showScreen('screen-roasts'));
 
   /* =========================================================
      INIT FORM DEFAULTS
@@ -150,14 +158,27 @@
     updateRoastMeta();
   });
 
-  function openRoastModal() {
-    newRoastName.value = '';
-    newRoastRoaster.value = '';
+  let editingRoastId = null;
+
+  function openRoastModal(editId) {
+    editingRoastId = editId || null;
+    if (editingRoastId) {
+      const r = roasts.find(r => r.id === editingRoastId);
+      modalTitle.textContent = 'Edit Roast';
+      saveRoastBtn.textContent = 'SAVE CHANGES';
+      newRoastName.value = r ? r.name : '';
+      newRoastRoaster.value = r ? r.roaster : '';
+    } else {
+      modalTitle.textContent = 'Add Roast';
+      saveRoastBtn.textContent = 'SAVE ROAST';
+      newRoastName.value = '';
+      newRoastRoaster.value = '';
+    }
     modalError.textContent = '';
     modalOverlay.classList.add('active');
     setTimeout(() => newRoastName.focus(), 50);
   }
-  function closeRoastModal() { modalOverlay.classList.remove('active'); }
+  function closeRoastModal() { modalOverlay.classList.remove('active'); editingRoastId = null; }
 
   cancelRoastBtn.addEventListener('click', closeRoastModal);
   modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeRoastModal(); });
@@ -166,12 +187,73 @@
     const name = newRoastName.value.trim();
     const roaster = newRoastRoaster.value.trim();
     if (!name) { modalError.textContent = 'ROAST NAME REQUIRED'; return; }
-    const roast = { id: 'r_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, roaster };
-    roasts.push(roast);
-    saveRoasts(roasts);
-    selectedRoastId = roast.id;
-    renderRoastSelect();
+
+    if (editingRoastId) {
+      const r = roasts.find(r => r.id === editingRoastId);
+      if (r) { r.name = name; r.roaster = roaster; }
+      saveRoasts(roasts);
+      renderRoastSelect();
+      renderRoastsList();
+    } else {
+      const roast = { id: 'r_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, roaster };
+      roasts.push(roast);
+      saveRoasts(roasts);
+      selectedRoastId = roast.id;
+      renderRoastSelect();
+      renderRoastsList();
+    }
     closeRoastModal();
+  });
+
+  addRoastBtn.addEventListener('click', () => openRoastModal());
+
+  function renderRoastsList() {
+    roastCount.textContent = String(roasts.length);
+    roastsList.innerHTML = '';
+    if (roasts.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'log-empty';
+      empty.textContent = 'NO ROASTS YET — ADD ONE ABOVE';
+      roastsList.appendChild(empty);
+      return;
+    }
+    roasts.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'roast-card';
+      card.innerHTML = `
+        <div class="roast-card-info">
+          <div class="roast-card-name">${escapeHtml(r.name)}</div>
+          <div class="roast-card-roaster">${escapeHtml(r.roaster || 'Unspecified roaster')}</div>
+        </div>
+        <div class="roast-card-actions">
+          <button class="roast-action-btn" data-action="edit" data-id="${r.id}">EDIT</button>
+          <button class="roast-action-btn danger" data-action="delete" data-id="${r.id}">DELETE</button>
+        </div>
+      `;
+      roastsList.appendChild(card);
+    });
+  }
+
+  roastsList.addEventListener('click', (e) => {
+    const btn = e.target.closest('.roast-action-btn');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'edit') {
+      openRoastModal(id);
+    } else if (btn.dataset.action === 'delete') {
+      const r = roasts.find(r => r.id === id);
+      const usedCount = shots.filter(s => s.coffeeId === id).length;
+      const warning = usedCount > 0
+        ? ` It is referenced by ${usedCount} existing log ${usedCount === 1 ? 'entry' : 'entries'} — those entries will keep their recorded values.`
+        : '';
+      if (confirm(`Delete "${r ? r.name : 'this roast'}"?${warning}`)) {
+        roasts = roasts.filter(r => r.id !== id);
+        saveRoasts(roasts);
+        if (selectedRoastId === id) selectedRoastId = roasts[0] ? roasts[0].id : null;
+        renderRoastSelect();
+        renderRoastsList();
+      }
+    }
   });
 
   /* =========================================================
