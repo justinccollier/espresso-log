@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#030303">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EXTRACT">
+<title>EXTRACT — Shot Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== HEADER ===== -->
+  <header class="hdr">
+    <div class="hdr-left">
+      <span class="hdr-dot" id="statusDot"></span>
+      <span class="hdr-title">EXTRACT</span>
+    </div>
+    <div class="hdr-right">
+      <span class="hdr-model">MODEL&nbsp;01</span>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ===== SCREEN: NEW SHOT ===== -->
+    <section class="screen active" id="screen-new">
+      <div class="screen-scroll">
+
+        <div class="panel-label">
+          <span>PARAMETERS</span><span class="dotted-line"></span><span id="paramCount">05</span>
+        </div>
+
+        <!-- DATE -->
+        <div class="field panel">
+          <div class="field-label-row">
+            <span class="field-label">01 — Date</span>
+          </div>
+          <input type="date" id="dateInput" class="input-flat">
+        </div>
+
+        <!-- COFFEE -->
+        <div class="field panel">
+          <div class="field-label-row">
+            <span class="field-label">02 — Coffee</span>
+          </div>
+          <select id="coffeeSelect" class="input-flat select-flat">
+            <option value="" disabled selected>No roast selected</option>
+          </select>
+          <div class="roast-meta" id="roastMeta"></div>
+        </div>
+
+        <!-- GRIND SIZE -->
+        <div class="field panel">
+          <div class="field-label-row">
+            <span class="field-label">03 — Grind Size</span>
+            <span class="field-unit">SETTING</span>
+          </div>
+          <div class="stepper-row">
+            <button type="button" class="step-btn" id="grindDec" aria-label="Decrease grind size">&minus;</button>
+            <div class="readout" id="grindValue">5.0</div>
+            <button type="button" class="step-btn" id="grindInc" aria-label="Increase grind size">&plus;</button>
+          </div>
+          <input type="range" id="grindSlider" class="slider-flat" min="1" max="10" step="0.5" value="5">
+          <div class="slider-scale">
+            <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+          </div>
+        </div>
+
+        <!-- DOSE -->
+        <div class="field panel">
+          <div class="field-label-row">
+            <span class="field-label">04 — Dose</span>
+            <span class="field-unit">GRAMS</span>
+          </div>
+          <div class="stepper-row">
+            <button type="button" class="step-btn" id="doseDec" aria-label="Decrease dose">&minus;</button>
+            <div class="readout" id="doseReadoutWrap">
+              <input type="number" id="doseInput" class="dose-input" inputmode="decimal" step="0.1" value="18.0">
+            </div>
+            <button type="button" class="step-btn" id="doseInc" aria-label="Increase dose">&plus;</button>
+          </div>
+        </div>
+
+        <!-- SHOT TYPE -->
+        <div class="field panel">
+          <div class="field-label-row">
+            <span class="field-label">05 — Shot</span>
+          </div>
+          <div class="segmented" id="shotSegment">
+            <button type="button" class="seg-btn active" data-value="Single">SINGLE</button>
+            <button type="button" class="seg-btn" data-value="Double">DOUBLE</button>
+          </div>
+        </div>
+
+        <button class="btn-primary btn-begin" id="beginBtn">BEGIN EXTRACTION</button>
+        <p class="hint-text" id="formError"></p>
+
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: TIMER ===== -->
+    <section class="screen" id="screen-timer">
+      <button class="abort-btn" id="abortBtn">ABORT</button>
+      <div class="timer-wrap">
+        <div class="timer-label">EXTRACTION TIME</div>
+        <div class="timer-display" id="timerDisplay">00:00.0</div>
+        <div class="timer-sub" id="timerSub">STANDBY</div>
+      </div>
+      <div class="timer-controls">
+        <button class="timer-btn timer-btn-start" id="startStopBtn">START</button>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: NOTES ===== -->
+    <section class="screen" id="screen-notes">
+      <div class="screen-scroll">
+        <div class="panel-label">
+          <span>RESULT LOGGED</span><span class="dotted-line"></span><span id="resultTime">00:00.0</span>
+        </div>
+        <div class="field panel">
+          <div class="field-label-row">
+            <span class="field-label">Tasting Notes</span>
+            <span class="field-unit">OPTIONAL</span>
+          </div>
+          <textarea id="notesInput" class="textarea-flat" rows="6" placeholder="e.g. bright acidity, syrupy body, slight channeling, sour / under-extracted..."></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn-secondary" id="skipNotesBtn">SKIP</button>
+          <button class="btn-primary" id="saveNotesBtn">SAVE ENTRY</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SCREEN: LOG ===== -->
+    <section class="screen" id="screen-log">
+      <div class="screen-scroll">
+        <div class="panel-label">
+          <span>LOG</span><span class="dotted-line"></span><span id="logCount">0 ENTRIES</span>
+        </div>
+
+        <div class="log-actions">
+          <button class="btn-secondary btn-small" id="exportCsvBtn">EXPORT CSV</button>
+        </div>
+
+        <div id="logList" class="log-list"></div>
+
+        <div class="panel-label panel-label-spaced">
+          <span>BACKUP</span><span class="dotted-line"></span><span>MANUAL</span>
+        </div>
+        <div class="panel backup-panel">
+          <p class="backup-copy">Export a full backup (roasts + log) to move this data to another device, or restore from a previous backup.</p>
+          <div class="btn-row">
+            <button class="btn-secondary btn-small" id="exportJsonBtn">EXPORT BACKUP</button>
+            <button class="btn-secondary btn-small" id="importJsonBtn">IMPORT BACKUP</button>
+          </div>
+          <input type="file" id="importFileInput" accept="application/json" style="display:none">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== BOTTOM NAV ===== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" id="navNew" data-target="screen-new">
+      <span class="nav-icon">＋</span><span class="nav-text">NEW SHOT</span>
+    </button>
+    <button class="nav-btn" id="navLog" data-target="screen-log">
+      <span class="nav-icon">≡</span><span class="nav-text">LOG</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ===== MODAL: ADD ROAST ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal panel">
+    <div class="field-label-row">
+      <span class="field-label">Add Roast</span>
+    </div>
+    <div class="field">
+      <label class="field-label sub-label">Roast Name</label>
+      <input type="text" id="newRoastName" class="input-flat" placeholder="e.g. Ethiopia Yirgacheffe">
+    </div>
+    <div class="field">
+      <label class="field-label sub-label">Roaster</label>
+      <input type="text" id="newRoastRoaster" class="input-flat" placeholder="e.g. Onyx Coffee Lab">
+    </div>
+    <p class="hint-text" id="modalError"></p>
+    <div class="btn-row">
+      <button class="btn-secondary" id="cancelRoastBtn">CANCEL</button>
+      <button class="btn-primary" id="saveRoastBtn">SAVE ROAST</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
